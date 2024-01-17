@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tim Tanggap Bencana Kaltim</title>
+
+    <link rel="stylesheet" href="css/mymap4.css" />
+    <link rel="stylesheet" href="libs/leaflet/leaflet.css" />
+
+    <script src="libs/jquery-3.6.1/dist/jquery.min.js"></script>
+    <script src="libs/leaflet/leaflet.js"></script>
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+      crossorigin="anonymous"
+    />
+    <style>
+      div.transbox {
+        margin: 5px;
+        background-color: #ffffff;
+        opacity: 0.7;
+      }
+
+      div.transbox p {
+        margin: 5%;
+        font-weight: bold;
+        color: #000000;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="mapdiv" style="border: 1px solid black"></div>
+    <div id="legenddiv" style="border: 1px solid black">
+      <div class="legend">
+        <h5 style="text-align: center; margin-top: 10px">Legenda Peta</h5>
+        <hr />
+        <div id="final_Kerawanan_Banjir" class="legenditem">
+          <p style="text-align: center; padding-bottom: 0px">
+            Kerawanan Banjir
+          </p>
+          <img src="libs/img/legend_banjir.jpg" alt="" />
+        </div>
+        <br />
+        <div id="final_penajam_batas" class="legenditem">
+          <p style="text-align: center">Batas Kecamatan</p>
+          <img src="libs/img/legend_batas.jpg" alt="" />
+        </div>
+        <div id="final_jalan1" class="legenditem">
+          <p style="text-align: center">Jaringan Jalan</p>
+          <img src="libs/img/legend-jalan.jpg" alt="" />
+        </div>
+        <div id="final_sungai" class="legenditem">
+          <p style="text-align: center">Sungai</p>
+          <img src="libs/img/legend_sungai.jpg" alt="" />
+        </div>
+        <br />
+        <p style="text-align: center">Titik Evakuasi</p>
+        <img
+          src="libs/leaflet/images/marker-icon-2x.png"
+          alt=""
+          srcset=""
+          width="20"
+          height="36"
+        />
+        <div class=""></div>
+        <hr />
+        <p style="text-align: center; margin: 0">Mitigasi Bencana</p>
+        <p style="text-align: center; margin: 0">Demak</p>
+        <p style="text-align: center; margin: 0">Universitas Dian Nuswantoro</p>
+      </div>
+    </div>
+
+    <script>
+      var mymap = L.map("mapdiv").setView([-6.931308, 110.520128], 13);
+
+      var osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap",
+        subdomain: ["a", "b", "c"],
+      });
+
+      osm.addTo(mymap);
+
+      var info = L.control();
+
+      info.onAdd = function (mymap) {
+        this._div = L.DomUtil.create("div", "info");
+        this.update();
+        return this._div;
+      };
+
+      info.update = function (props) {
+        this._div.innerHTML =
+          '<div class="transbox"><h4><b>Peta Rencana Mitigasi Bencana Banjir</h4></b>' +
+          (props
+            ? "<b>" + props.name + "</b><br />" + props.density + "%"
+            : "Studi Kasus Kecamatan Sayung" + "</div>");
+      };
+
+      info.addTo(mymap);
+
+      var creator = L.control();
+
+      creator.onAdd = function (mymap) {
+        this._div = L.DomUtil.create("div", "info");
+        this.update();
+        return this._div;
+      };
+
+      creator.update = function (props) {
+        this._div.innerHTML =
+          '<div class="transbox">' +
+          (props
+            ? "<b>" + props.name + "</b>" + props.density + "%"
+            : "Dibuat Oleh: Renaldy Bayu" +
+              "<br>" +
+              "Sumber: Geoportal Penajam</div>");
+      };
+
+      creator.addTo(mymap);
+
+      var rawan_banjir = L.tileLayer.wms("/geoserver/wms?", {
+        layers: "final:Kerawanan_Banjir",
+        format: "image/png",
+        transparent: true,
+      });
+      rawan_banjir.addTo(mymap);
+
+      var batas_kecamatan = L.tileLayer.wms("/geoserver/wms?", {
+        layers: "final:penajam_batas",
+        format: "image/png",
+        transparent: true,
+      });
+      batas_kecamatan.addTo(mymap);
+
+      var jalan = L.tileLayer.wms("/geoserver/wms?", {
+        layers: "final:jalan1",
+        format: "image/png",
+        transparent: true,
+      });
+      jalan.addTo(mymap);
+
+      var sungai = L.tileLayer.wms("/geoserver/wms?", {
+        layers: "final:sungai",
+        format: "image/png",
+        transparent: true,
+      });
+      sungai.addTo(mymap);
+
+      var basemap = {
+        OpenStreetMap: osm,
+      };
+
+      var overlaymap = {
+        "Kerawanan Banjir": rawan_banjir,
+        "Batas Kecamatan": batas_kecamatan,
+        Sungai: sungai,
+        "Jaringan Jalan": jalan,
+      };
+
+      L.control.layers(basemap, overlaymap).addTo(mymap);
+
+      var marker1 = L.marker([-6.955749, 110.456326])
+        .addTo(mymap)
+        .bindPopup(
+          "<h5>Rawan Banjir</h5><br><p>jenis: Tepi Pantai <br> luas: 265753,571631999977399 m2</p>"
+        );
+
+      mymap.on("click", function (e) {
+        var pos = e.latlng;
+        var pt = mymap.latLngToContainerPoint(pos);
+        var w = mymap.getSize().x;
+        var h = mymap.getSize().y;
+        var bnd = mymap.getBounds();
+        var west = bnd.getWest();
+        var east = bnd.getEast();
+        var north = bnd.getNorth();
+        var south = bnd.getSouth();
+
+        $.ajax({
+          url: "/geoserver/wms",
+          data: {
+            service: "WMS",
+            version: "1.1.1",
+            request: "GetFeatureInfo",
+            info_format: "application/json",
+            layers: "final:penajam_batas",
+            query_layers: "final:penajam_batas",
+            width: w,
+            height: h,
+            x: parseInt(pt.x),
+            y: parseInt(pt.y),
+            bbox: west + "," + south + "," + east + "," + north,
+          },
+          success: function (ajaxresult) {
+            console.log(ajaxresult);
+            if (typeof ajaxresult != "undefined") {
+              if (ajaxresult.features.length > 0) {
+                var pro = ajaxresult.features[0].properties;
+
+                var content = "<table><tr><th>Field</th><th>Value</th></tr>";
+                $.each(pro, function (index, value) {
+                  content +=
+                    "<tr><td>" + index + "</td><td>" + value + "</td></tr>";
+                });
+
+                content += "</table>";
+                L.popup().setLatLng(pos).setContent(content).openOn(mymap);
+              }
+            }
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            alert("Error");
+          },
+        });
+      });
+
+      mymap.on("layeradd", function (e) {
+        var layerId = e.layer.options.layers.replace(":", "_");
+        $("#" + layerId).show();
+      });
+
+      mymap.on("layerremove", function (e) {
+        var layerId = e.layer.options.layers.replace(":", "_");
+        $("#" + layerId).hide();
+      });
+    </script>
+  </body>
+</html>
